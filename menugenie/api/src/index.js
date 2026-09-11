@@ -50,8 +50,15 @@ async function checkRateLimit(env, ip) {
   return true;
 }
 
-function reportUrlFor(env, job) {
-  const base = env.PUBLIC_BASE_URL || 'https://menu-genie.com';
+/**
+ * Where the buyer opens their report. Defaults to whatever host served this
+ * request, so it is correct on workers.dev out of the box. Only set
+ * PUBLIC_BASE_URL to https://menu-genie.com once a Worker Route actually maps
+ * menu-genie.com/report* and /api/report* to THIS Worker — menu-genie.com is
+ * served by menu-genie-landing, which has no /report route.
+ */
+function reportUrlFor(env, job, request) {
+  const base = env.PUBLIC_BASE_URL || new URL(request.url).origin;
   return `${base}/report?job=${job.id}`;
 }
 
@@ -60,7 +67,7 @@ function reportUrlFor(env, job) {
  * ping can return 200 immediately — a slow response here makes Gumroad retry
  * hourly for 3 hours and duplicate the work.
  */
-async function generateAndDeliver(env, job) {
+async function generateAndDeliver(env, job, reportUrl) {
   try {
     job.status = STATUS.GENERATING;
     await putJob(env, job);
@@ -93,7 +100,7 @@ async function generateAndDeliver(env, job) {
         pdf,
         restaurant: meta.restaurant,
         jobId: job.id,
-        reportUrl: reportUrlFor(env, job),
+        reportUrl,
       });
       if (sent) { job.delivered_at = new Date().toISOString(); await putJob(env, job); }
     }
@@ -167,7 +174,7 @@ export default {
             to: email,
             restaurant: null,
             jobId: job.id,
-            reportUrl: reportUrlFor(env, job),
+            reportUrl: reportUrlFor(env, job, request),
             html: `<p>Thanks for your purchase. We could not match it to a menu, so nothing was analysed yet.</p>
                    <p>Open the link above and upload your menu — your report generates immediately and this purchase is already credited.</p>`,
           }));
@@ -175,7 +182,7 @@ export default {
         return new Response('ok (needs menu)', { status: 200 });
       }
 
-      ctx.waitUntil(generateAndDeliver(env, job));
+      ctx.waitUntil(generateAndDeliver(env, job, reportUrlFor(env, job, request)));
       return new Response('ok', { status: 200 });
     }
 
@@ -207,7 +214,7 @@ export default {
       }
       // Not ready yet — poll. The Gumroad redirect fires the instant payment
       // clears, well before generation finishes. Never render blank.
-      return new Response(pollingPage(job, url.searchParams.get('sale_id') || ''), {
+      return new Response(pollingPage(job, url.searchParams.get('sale_id') || '', env.API_BASE_URL || url.origin), {
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
       });
     }
@@ -227,7 +234,7 @@ export default {
       fresh.email = job.email;
       fresh.status = STATUS.PAID;
       await putJob(env, fresh);
-      ctx.waitUntil(generateAndDeliver(env, fresh));
+      ctx.waitUntil(generateAndDeliver(env, fresh, reportUrlFor(env, fresh, request)));
       return json({ job_id: fresh.id, status: 'generating' }, 200, ch);
     }
 
@@ -272,7 +279,7 @@ export default {
   },
 };
 
-function pollingPage(job, saleId) {
+function pollingPage(job, saleId, apiBase) {
   const state = job?.status || (saleId ? 'pending' : 'unknown');
   const failed = state === 'failed';
   const needsMenu = state === 'needs_menu';
@@ -314,7 +321,7 @@ ${failed || needsMenu ? '' : `<script>
   const poll = setInterval(async () => {
     tries++;
     try {
-      const r = await fetch('/api/report?${q}');
+      const r = await fetch('${apiBase}/api/report?${q}');
       if (r.ok) {
         const d = await r.json();
         if (d.status === 'ready') { clearInterval(poll); location.reload(); return; }
