@@ -1,0 +1,17 @@
+{
+  "name": "menugenie-api",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "test": "node ../test/flow.test.mjs"
+  },
+  "dependencies": {
+    "@cloudflare/puppeteer": "^1.0.4"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
