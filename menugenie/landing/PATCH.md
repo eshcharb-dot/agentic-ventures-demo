@@ -102,3 +102,35 @@ lets the report page find the purchase.
 Also upload a one-page "your report is being generated, check your email" PDF to
 the product's Content so the Gumroad page is never blank again, even if every
 other layer fails.
+
+---
+
+## 5. Handle `?attach=<job_id>` (orphan-purchase recovery)
+
+When someone buys straight from the Gumroad page with no menu attached, the
+Worker emails them a link back to `menu-genie.com/?attach=<job_id>`. The
+landing page must honour it, or that recovery dead-ends.
+
+Add near the other page-load IIFEs:
+
+```js
+// Someone paid without a menu attached — credit the purchase to their next analysis.
+(function handleAttach() {
+  const jobId = new URLSearchParams(window.location.search).get('attach');
+  if (!jobId) return;
+  window.MG_ATTACH_JOB = jobId;
+  history.replaceState({}, '', '/');
+  const b = document.createElement('div');
+  b.style.cssText = 'background:#2D8B4E;color:#fff;padding:14px;text-align:center;font-weight:600;';
+  b.textContent = 'Your purchase is credited — upload your menu below and your Pro Report generates immediately.';
+  document.body.prepend(b);
+  document.querySelector('.demo-input-area')?.scrollIntoView({ behavior: 'smooth' });
+})();
+```
+
+Then, where `analyzeFree()` finishes, if `window.MG_ATTACH_JOB` is set, POST the
+same menu to `${API_URL}/attach-menu` with `{ job_id: window.MG_ATTACH_JOB, menuText | menuUrl | menuFile }`
+and send the user to the returned report URL instead of showing the paywall.
+
+Lower priority than edits 1–3: it only fires for buyers who skip the site
+entirely. Edits 1–3 stop the bleeding; this one recovers the stragglers.

@@ -9,6 +9,7 @@ ALLOWED_ORIGIN = "https://menu-genie.com"
 # and /api/report* to this Worker. Unset = use this Worker's own origin, which
 # always works. menu-genie.com is served by menu-genie-landing, not this Worker.
 # PUBLIC_BASE_URL = "https://menu-genie.com"
+LANDING_URL = "https://menu-genie.com"
 MAIL_FROM = "MenuGenie <hello@menu-genie.com>"
 GUMROAD_PRODUCT_PERMALINK = "menugenie-pro"
 # GUMROAD_PRODUCT_ID = ""   # set to pin the ping to one product

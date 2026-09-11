@@ -220,7 +220,7 @@ export default {
       }
       // Not ready yet — poll. The Gumroad redirect fires the instant payment
       // clears, well before generation finishes. Never render blank.
-      return new Response(pollingPage(job, url.searchParams.get('sale_id') || '', env.API_BASE_URL || url.origin), {
+      return new Response(pollingPage(job, url.searchParams.get('sale_id') || '', env.API_BASE_URL || url.origin, env.LANDING_URL || 'https://menu-genie.com'), {
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
       });
     }
@@ -285,7 +285,7 @@ export default {
   },
 };
 
-function pollingPage(job, saleId, apiBase) {
+function pollingPage(job, saleId, apiBase, landingUrl) {
   const state = job?.status || (saleId ? 'pending' : 'unknown');
   const failed = state === 'failed';
   const needsMenu = state === 'needs_menu';
@@ -314,7 +314,7 @@ ${failed ? `
   <h1>We need your menu</h1>
   <p>Your purchase is confirmed, but it wasn't linked to a menu — so there is nothing to analyse yet.</p>
   <p>Upload your menu and your report generates straight away.</p>
-  <a class="btn" href="/?attach=${job?.id || ''}">Upload my menu</a>
+  <a class="btn" href="${landingUrl}/?attach=${job?.id || ''}">Upload my menu</a>
 ` : `
   <div class="spin"></div>
   <h1>Building your Pro Report…</h1>
