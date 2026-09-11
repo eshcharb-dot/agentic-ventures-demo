@@ -17,7 +17,7 @@ const API_URL = 'https://menugenie-api-v2.eshcharb.workers.dev';
 becomes
 
 ```js
-const API_URL = 'https://menugenie-api-v3.eshcharb.workers.dev';
+const API_URL = 'https://menugenie-api-v4.eshcharb.workers.dev';
 ```
 
 ---
@@ -92,8 +92,8 @@ This is live on the public site and hands out full reports for free. Delete the
 
 | Setting | Where | Value |
 |---|---|---|
-| **Ping endpoint** | Settings → Advanced → Ping | `https://menugenie-api-v3.eshcharb.workers.dev/gumroad/ping` |
-| **Custom Delivery / redirect** | Product → Content → Redirect | `https://menu-genie.com/report?__sale_info__` |
+| **Ping endpoint** | Settings → Advanced → Ping | `https://menugenie-api-v4.eshcharb.workers.dev/gumroad/ping` |
+| **Custom Delivery / redirect** | Product → Content → Redirect | `https://menugenie-api-v4.eshcharb.workers.dev/report?__sale_info__` |
 
 `__sale_info__` is a Gumroad literal — it expands to
 `sale_id=…&product_id=…&product_permalink=…` on the download page. That is what

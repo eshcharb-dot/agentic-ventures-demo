@@ -51,7 +51,7 @@ wrangler secret put SERPER_API_KEY         # optional
 
 # 3. Ship
 wrangler deploy
-curl https://menugenie-api-v3.eshcharb.workers.dev/health
+curl https://menugenie-api-v4.eshcharb.workers.dev/health
 ```
 
 `/health` reports every binding. Do not proceed while any of
@@ -66,8 +66,8 @@ Optional, both improve things but neither blocks delivery:
 
 | Setting | Value |
 |---|---|
-| Settings → Advanced → **Ping** | `https://menugenie-api-v3.eshcharb.workers.dev/gumroad/ping` |
-| Product → Content → **Redirect** | `https://menu-genie.com/report?__sale_info__` |
+| Settings → Advanced → **Ping** | `https://menugenie-api-v4.eshcharb.workers.dev/gumroad/ping` |
+| Product → Content → **Redirect** | `https://menugenie-api-v4.eshcharb.workers.dev/report?__sale_info__` |
 
 Then apply `landing/PATCH.md`.
 
@@ -98,5 +98,5 @@ Run in this order. Steps 1–3 need no money.
   photo ID requested in April. Fixing delivery does not get you paid.
 - Secrets were found in plaintext in the "MenGen data" Google Doc. Rotate the
   OpenAI, Resend, X and Meta credentials as you set them here.
-- `menugenie-api`, `menugenie-api-v3` (old), `menugenie-v2-test` are dead
+- `menugenie-api`, `menugenie-api-v4` (old), `menugenie-v2-test` are dead
   copies. Delete once v3 is live.
