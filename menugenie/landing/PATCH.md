@@ -14,9 +14,14 @@ including "the success_url bug is GONE from live code".
 3. Paste the entire contents of `menugenie/landing/src/index.js`
 4. **Save and deploy**
 
-Use the dashboard editor rather than `wrangler deploy`: this Worker's routes
-(menu-genie.com) are dashboard-managed, and a wrangler deploy without a
-`routes` block can detach them.
+Either the dashboard editor or a Workers Builds deploy is safe. Cloudflare
+preserves dashboard-configured routes when the Wrangler config omits a
+`routes` key, and `wrangler.toml` here omits it deliberately.
+
+**Better than pasting: connect this Worker to Git** (Worker → Settings →
+Builds → Connect, root directory `menugenie/landing`). Then every fix deploys
+on push, exactly like `menugenie-api-v4` already does — which is the only
+reason the API is current while this page sat unchanged since April.
 
 Roll back at any time via the Worker's **Deployments** tab — the previous
 version stays available.
