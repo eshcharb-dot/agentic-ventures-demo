@@ -11,7 +11,7 @@
 
 import { runAnalysis } from './analysis.js';
 import { renderReportHTML, emailReport, renderPDF } from './render.js';
-import { parsePing, verifySale, checkoutUrl, checkToken } from './gumroad.js';
+import { parsePing, verifySale, checkoutUrl, checkToken, gumroadToken, gumroadTokenSource } from './gumroad.js';
 import { createJob, getJob, putJob, bindSale, findJobBySale, loadMenuInput, isPaid, STATUS } from './jobs.js';
 
 const ALLOWED_ORIGINS = [
@@ -140,7 +140,7 @@ export default {
           !env.OPENAI_API_KEY && !env.ANTHROPIC_API_KEY && 'no model key — analysis cannot run at all',
           !env.ANTHROPIC_API_KEY && 'ANTHROPIC_API_KEY missing — PDF menus will fail (PDFs always use Anthropic)',
           !env.RESEND_API_KEY && 'RESEND_API_KEY missing — report is never emailed',
-          !env.GUMROAD_ACCESS_TOKEN && 'GUMROAD_ACCESS_TOKEN missing — sales are NOT verified, forged pings get free reports',
+          !gumroadToken(env) && 'No Gumroad token (checked GUMROAD_ACCESS_TOKEN and GUMROAD_ACESS_TOKEN) — sales are NOT verified, forged pings get free reports',
         ].filter(Boolean),
         bindings: {
           jobs: !!env.JOBS,
@@ -149,7 +149,8 @@ export default {
           uploads_r2: !!env.UPLOADS,
           rate_limit: !!env.RATE_LIMIT_KV,
           browser_pdf: !!env.BROWSER,
-          gumroad_verify: !!env.GUMROAD_ACCESS_TOKEN,
+          gumroad_verify: !!gumroadToken(env),
+          gumroad_token_binding: gumroadTokenSource(env),
           email: !!env.RESEND_API_KEY,
         },
       }, 200, ch);

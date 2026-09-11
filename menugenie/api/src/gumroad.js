@@ -9,6 +9,25 @@
 const GUMROAD_API = 'https://api.gumroad.com/v2';
 
 /**
+ * Read the access token, tolerating the misspelled binding name.
+ *
+ * The secret was created in Cloudflare as GUMROAD_ACESS_TOKEN (one C).
+ * Cloudflare hides secret values once saved, so renaming it would mean
+ * regenerating the token on Gumroad's side. Accepting both spellings is the
+ * cheaper fix. Correct spelling wins if both are ever present.
+ */
+export function gumroadToken(env) {
+  return env.GUMROAD_ACCESS_TOKEN || env.GUMROAD_ACESS_TOKEN || '';
+}
+
+/** Which binding name the token was actually found under (for /health). */
+export function gumroadTokenSource(env) {
+  if (env.GUMROAD_ACCESS_TOKEN) return 'GUMROAD_ACCESS_TOKEN';
+  if (env.GUMROAD_ACESS_TOKEN) return 'GUMROAD_ACESS_TOKEN (misspelled, still accepted)';
+  return null;
+}
+
+/**
  * Gumroad encodes pass-through params as `url_params[job_id]=abc`.
  * Pull them back out into a plain object.
  */
@@ -43,16 +62,17 @@ export function parsePing(form) {
  *   { ok: true, sale: null, unverified: true } — no token configured
  */
 export async function verifySale(env, saleId, expectedProductId) {
-  if (!env.GUMROAD_ACCESS_TOKEN) {
+  const token = gumroadToken(env);
+  if (!token) {
     // Fail OPEN only so a misconfigured deploy still delivers to real buyers,
     // but shout about it. Set the secret; this is the free-report hole.
-    console.warn('[gumroad] GUMROAD_ACCESS_TOKEN not set — sale NOT verified');
+    console.warn('[gumroad] no access token (GUMROAD_ACCESS_TOKEN / GUMROAD_ACESS_TOKEN) — sale NOT verified');
     return { ok: true, sale: null, unverified: true };
   }
 
   try {
     const res = await fetch(
-      `${GUMROAD_API}/sales/${encodeURIComponent(saleId)}?access_token=${encodeURIComponent(env.GUMROAD_ACCESS_TOKEN)}`,
+      `${GUMROAD_API}/sales/${encodeURIComponent(saleId)}?access_token=${encodeURIComponent(token)}`,
       { method: 'GET' }
     );
     if (!res.ok) return { ok: false, reason: `gumroad api ${res.status}` };
@@ -86,14 +106,15 @@ export function checkoutUrl(env, jobId) {
  * browser without ever putting it in a URL bar or shell history.
  */
 export async function checkToken(env) {
-  if (!env.GUMROAD_ACCESS_TOKEN) return { set: false, valid: false, reason: 'GUMROAD_ACCESS_TOKEN not set' };
+  const token = gumroadToken(env);
+  if (!token) return { set: false, valid: false, reason: 'no token found under GUMROAD_ACCESS_TOKEN or GUMROAD_ACESS_TOKEN' };
   try {
-    const res = await fetch(`${GUMROAD_API}/user?access_token=${encodeURIComponent(env.GUMROAD_ACCESS_TOKEN)}`);
+    const res = await fetch(`${GUMROAD_API}/user?access_token=${encodeURIComponent(token)}`);
     if (res.status === 401) return { set: true, valid: false, reason: 'token rejected (401) — revoked or mistyped' };
     if (!res.ok) return { set: true, valid: false, reason: `gumroad api ${res.status}` };
     const data = await res.json();
     if (!data.success) return { set: true, valid: false, reason: 'gumroad returned success:false' };
-    return { set: true, valid: true, account: data.user?.email || data.user?.name || 'ok' };
+    return { set: true, valid: true, account: data.user?.email || data.user?.name || 'ok', binding: gumroadTokenSource(env) };
   } catch (err) {
     return { set: true, valid: false, reason: `request failed: ${err.message}` };
   }

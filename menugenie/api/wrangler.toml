@@ -13,6 +13,10 @@ LANDING_URL = "https://menu-genie.com"
 MAIL_FROM = "MenuGenie <hello@menu-genie.com>"
 GUMROAD_PRODUCT_PERMALINK = "menugenie-pro"
 # GUMROAD_PRODUCT_ID = ""   # set to pin the ping to one product
+#
+# NOTE: the live secret is named GUMROAD_ACESS_TOKEN (one C). The code accepts
+# that spelling as well as GUMROAD_ACCESS_TOKEN — see gumroadToken() in
+# src/gumroad.js. Do not "tidy" this away without renaming the secret first.
 
 # Job store. Create with:  wrangler kv namespace create JOBS
 [[kv_namespaces]]
