@@ -1,5 +1,37 @@
 # Landing page patch — `menu-genie-landing`
 
+## ✅ The patched file already exists: `src/index.js`
+
+You no longer need to do the find/replace edits below by hand. I extracted the
+deployed bundle, applied all five edits, and tested the result — the Worker
+boots, serves the page, and 14/14 checks pass (`menugenie/test/landing.test.mjs`),
+including "the success_url bug is GONE from live code".
+
+**To apply it — one paste, not three edits:**
+
+1. Cloudflare dashboard → Compute (Workers) → `menu-genie-landing` → **Edit code**
+2. Select all in the editor and delete
+3. Paste the entire contents of `menugenie/landing/src/index.js`
+4. **Save and deploy**
+
+Use the dashboard editor rather than `wrangler deploy`: this Worker's routes
+(menu-genie.com) are dashboard-managed, and a wrangler deploy without a
+`routes` block can detach them.
+
+Roll back at any time via the Worker's **Deployments** tab — the previous
+version stays available.
+
+After deploying, confirm on menu-genie.com: run a free analysis, then open
+devtools → Network and click the buy button. The request should go to
+`gumroad.com/l/menugenie-pro?wanted=true&job_id=...` — **if there is no
+`job_id` on that URL, the fix is not live.**
+
+---
+
+## What changed (reference)
+
+The manual instructions below are kept for review — this is what was applied.
+
 Three edits. The first is the actual bug fix.
 
 The deployed Worker is a 139 KB bundle with the page inlined and no source in

@@ -1,0 +1,13 @@
+# Landing Worker, extracted from the deployed bundle and patched.
+#
+# ⚠ PREFER THE DASHBOARD PASTE (see PATCH.md). This Worker has routes and
+# settings configured in the Cloudflare dashboard, and `wrangler deploy` with
+# no `routes` here can detach menu-genie.com from it. Deploying by pasting
+# src/index.js into the dashboard editor preserves all of that.
+#
+# If you do use wrangler, verify the route for menu-genie.com is still attached
+# afterwards, and re-add it if not.
+
+name = "menu-genie-landing"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
