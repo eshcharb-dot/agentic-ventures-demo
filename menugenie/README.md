@@ -38,8 +38,8 @@ Two further holes found in the same pass:
 
 ```bash
 # 1. Job store
-wrangler kv namespace create JOBS
-#    put the id into api/wrangler.toml
+# Already created: MENUGENIE_JOBS = a4d9a13475054556b2ab1cc46ec13e56 (wired into wrangler.toml)
+
 
 # 2. Secrets
 cd api

@@ -13,7 +13,7 @@ GUMROAD_PRODUCT_PERMALINK = "menugenie-pro"
 # Job store. Create with:  wrangler kv namespace create JOBS
 [[kv_namespaces]]
 binding = "JOBS"
-id = "REPLACE_WITH_JOBS_NAMESPACE_ID"
+id = "a4d9a13475054556b2ab1cc46ec13e56"  # MENUGENIE_JOBS (created 2026-09-11)
 
 # Existing namespace — reused so rate limiting survives isolate recycling.
 [[kv_namespaces]]
