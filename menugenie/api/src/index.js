@@ -132,8 +132,20 @@ export default {
         status: 'ok',
         version: '3.0.0',
         ...(deep ? { deep } : {}),
+        // `ready` is the one-line answer to "can a paying customer actually
+        // get their report right now?". Everything else is detail.
+        ready: !!env.JOBS && !!env.RESEND_API_KEY && (!!env.OPENAI_API_KEY || !!env.ANTHROPIC_API_KEY),
+        blocking: [
+          !env.JOBS && 'JOBS KV not bound — nothing can be stored',
+          !env.OPENAI_API_KEY && !env.ANTHROPIC_API_KEY && 'no model key — analysis cannot run at all',
+          !env.ANTHROPIC_API_KEY && 'ANTHROPIC_API_KEY missing — PDF menus will fail (PDFs always use Anthropic)',
+          !env.RESEND_API_KEY && 'RESEND_API_KEY missing — report is never emailed',
+          !env.GUMROAD_ACCESS_TOKEN && 'GUMROAD_ACCESS_TOKEN missing — sales are NOT verified, forged pings get free reports',
+        ].filter(Boolean),
         bindings: {
           jobs: !!env.JOBS,
+          openai_key: !!env.OPENAI_API_KEY,
+          anthropic_key: !!env.ANTHROPIC_API_KEY,
           uploads_r2: !!env.UPLOADS,
           rate_limit: !!env.RATE_LIMIT_KV,
           browser_pdf: !!env.BROWSER,
