@@ -1,0 +1,38 @@
+name = "menugenie-api-v3"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ALLOWED_ORIGIN = "https://menu-genie.com"
+PUBLIC_BASE_URL = "https://menu-genie.com"
+MAIL_FROM = "MenuGenie <hello@menu-genie.com>"
+GUMROAD_PRODUCT_PERMALINK = "menugenie-pro"
+# GUMROAD_PRODUCT_ID = ""   # set to pin the ping to one product
+
+# Job store. Create with:  wrangler kv namespace create JOBS
+[[kv_namespaces]]
+binding = "JOBS"
+id = "REPLACE_WITH_JOBS_NAMESPACE_ID"
+
+# Existing namespace — reused so rate limiting survives isolate recycling.
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "4de1b9ee8e8441a8a46ff8c4fba21c07"
+
+# Optional. Requires enabling R2 in the dashboard first; without it uploaded
+# menus fall back to KV (works, but capped and pricier).
+# [[r2_buckets]]
+# binding = "UPLOADS"
+# bucket_name = "menugenie-uploads"
+
+# Optional. Adds a PDF attachment to the delivery email.
+# [browser]
+# binding = "BROWSER"
+
+# Secrets (wrangler secret put <NAME>):
+#   OPENAI_API_KEY          — analysis
+#   ANTHROPIC_API_KEY       — analysis fallback + all PDF input
+#   GUMROAD_ACCESS_TOKEN    — sale verification. WITHOUT THIS, PINGS ARE UNVERIFIED.
+#   RESEND_API_KEY          — report email
+#   SERPER_API_KEY          — optional local competitor pricing
