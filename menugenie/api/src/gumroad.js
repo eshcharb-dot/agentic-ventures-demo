@@ -78,3 +78,23 @@ export function checkoutUrl(env, jobId) {
   const permalink = env.GUMROAD_PRODUCT_PERMALINK || 'menugenie-pro';
   return `https://gumroad.com/l/${permalink}?wanted=true&job_id=${encodeURIComponent(jobId)}`;
 }
+
+/**
+ * Smoke-test the access token without exposing it. Calls /v2/user, which
+ * every valid token can reach, and reports only whether it worked.
+ * Surfaced via GET /health?deep=1 so the token can be verified from a
+ * browser without ever putting it in a URL bar or shell history.
+ */
+export async function checkToken(env) {
+  if (!env.GUMROAD_ACCESS_TOKEN) return { set: false, valid: false, reason: 'GUMROAD_ACCESS_TOKEN not set' };
+  try {
+    const res = await fetch(`${GUMROAD_API}/user?access_token=${encodeURIComponent(env.GUMROAD_ACCESS_TOKEN)}`);
+    if (res.status === 401) return { set: true, valid: false, reason: 'token rejected (401) — revoked or mistyped' };
+    if (!res.ok) return { set: true, valid: false, reason: `gumroad api ${res.status}` };
+    const data = await res.json();
+    if (!data.success) return { set: true, valid: false, reason: 'gumroad returned success:false' };
+    return { set: true, valid: true, account: data.user?.email || data.user?.name || 'ok' };
+  } catch (err) {
+    return { set: true, valid: false, reason: `request failed: ${err.message}` };
+  }
+}

@@ -11,7 +11,7 @@
 
 import { runAnalysis } from './analysis.js';
 import { renderReportHTML, emailReport, renderPDF } from './render.js';
-import { parsePing, verifySale, checkoutUrl } from './gumroad.js';
+import { parsePing, verifySale, checkoutUrl, checkToken } from './gumroad.js';
 import { createJob, getJob, putJob, bindSale, findJobBySale, loadMenuInput, isPaid, STATUS } from './jobs.js';
 
 const ALLOWED_ORIGINS = [
@@ -123,9 +123,15 @@ export default {
 
     // ── health ────────────────────────────────────────────────────────────
     if (request.method === 'GET' && path === '/health') {
+      // ?deep=1 actually calls Gumroad to prove the token works, rather than
+      // just confirming a secret exists. Returns no secret material.
+      const deep = url.searchParams.get('deep') === '1'
+        ? { gumroad_token: await checkToken(env) }
+        : undefined;
       return json({
         status: 'ok',
         version: '3.0.0',
+        ...(deep ? { deep } : {}),
         bindings: {
           jobs: !!env.JOBS,
           uploads_r2: !!env.UPLOADS,
