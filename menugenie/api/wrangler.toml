@@ -1,4 +1,4 @@
-name = "menugenie-api-v3"
+name = "menugenie-api-v4"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
 compatibility_flags = ["nodejs_compat"]
